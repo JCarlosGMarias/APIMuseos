@@ -27,11 +27,11 @@ namespace APIMuseos
     {
         static void Main(string[] args)
         {
-            leeMuseos();
-            Console.ReadLine();
+            //leeMuseos();
 
             PhotosEx();
-            
+
+            Console.ReadLine();
         }
 
         static async void leeMuseos()
@@ -72,10 +72,10 @@ namespace APIMuseos
                     if (response.IsSuccessStatusCode)
                     {
                         var content = await response.Content.ReadAsStringAsync();
-                        JArray Array = JArray.Parse(content);
-                        var visitasS = from o in Array
-                                       where (p => p["visitas"].Equals("S"))
-                                       select o;
+                        //JArray Array = JArray.Parse(content);
+                        //var visitasS = from o in Array
+                        //               where p => p["visitas"] == "S"
+                        //               select o;
                     }
                 }
             }
@@ -83,49 +83,81 @@ namespace APIMuseos
 
         static async void PhotosEx()
         {
-            //usando jsonplaceholder.typicode.com
+            // Usando jsonplaceholder.typicode.com
             var Root = new Uri(@"https://jsonplaceholder.typicode.com");
 
-            var Posts = await FetchFrom<Post>(Root + "/posts");
-            var Comments = await FetchFrom<Comment>(Root + "/comments");
-            var Albums = await FetchFrom<Album>(Root + "/albums");
-            var Photos = await FetchFrom<Photo>(Root + "/photos");
-            var Todos = await FetchFrom<Todo>(Root + "/todos");
-            var Users = new List<User>();
+            // Crear las colecciones con los datos.
+            var Posts = await FetchTo<Post>($"{Root}posts");
+            var Comments = await FetchTo<Comment>($"{Root}comments");
+            var Albums = await FetchTo<Album>($"{Root}albums");
+            var Photos = await FetchTo<Photo>($"{Root}photos");
+            var Todos = await FetchTo<Todo>($"{Root}todos");
+            var Users = await FetchTo<User>($"{Root}users");
 
-            
+            // Ver cuáles son los comentarios que hay para un post determinado
+            var PostID = 1;
 
-            //Crear las colecciones con los datos.
-            var Photos =
+            var CommentsForSinglePost = from c in Comments
+                                        where c.postId == (from p in Posts where p.id == PostID select p).First().id
+                                        select c;
 
-            //Ver cuáles son los comentarios que hay para un post determinado
+            Console.WriteLine($"Comments for post {PostID}:{Environment.NewLine}");
+            foreach (var Comment in CommentsForSinglePost)
+            {
+                Console.WriteLine($"- {Comment.name} ({Comment.email}) -> {Comment.body}");
+            }
+            Console.WriteLine("");
+
+            // Ver cuáles son los álbums que hay y la cantidad de fotos que contiene cada uno de ellos
+            var PhotosInAlbums = from p in Photos
+                                 join a in Albums on p.albumId equals a.id
+                                 group p by a.title into photos
+                                 orderby photos.Key
+                                 select photos;
+
+            Console.WriteLine($"Comments for post {PostID}:{Environment.NewLine}");
+            foreach (var Album in PhotosInAlbums)
+            {
+                Console.WriteLine($"- {Album.Key}:");
+                foreach (var Photo in Album)
+                {
+                    Console.WriteLine($"  * {Photo.title}: {Photo.thumbnailUrl}");
+
+                }
+            }
+            Console.WriteLine("");
+
+            // Ver cuáles son los nombres de los usuarios ordenados descendentemente
+            var UserNames = from u in Users
+                            orderby u.name descending
+                            select u.name;
+
+            Console.WriteLine($"Sorted down user names:");
+            foreach (var UserName in UserNames)
+            {
+                Console.WriteLine($"- {UserName}");
+            }
+            Console.WriteLine("");
+
+            // Tomar los cinco álbums donde más fotos existan
 
 
-            //Ver cuáles son los álbums que hay y la cantidad de fotos que contiene cada uno de eellos
+            // Ver qué cantidad de comentarios totales ha recibido un usuario
 
 
-            //Ver cuáles son los nombres de los usuarios ordenados descendentemente
+            // Mostrar el usuario que más comentarios ha recibido
 
 
-            //Tomar los cinco álbums donde más fotos existan
+            // Mostrar para cada usuario cuántas tareas tiene terminadas y cuáles no
 
 
-            //Ver qué cantidad de comentarios totales ha recibido un usuario
+            // Mostrar cuál es el usuario que más tareas tiene por finalizar
 
 
-            //Mostrar el usuario que más comentarios ha recibido
-
-
-            //Mostrar para cada usuario cuántas tareas tiene terminadas y cuáles no
-
-
-            //Mostrar cuál es el usuario que más tareas tiene por finalizar
-
-
-            //Mostrar todas las urls de las imágenes del usuario que más fotos ha subido
+            // Mostrar todas las urls de las imágenes del usuario que más fotos ha subido
         }
 
-        static async Task<List<T>> FetchFrom<T>(string Resource) where T : class
+        static async Task<List<T>> FetchTo<T>(string Resource) where T : class
         {
             List<T> Result = new List<T>();
 
