@@ -85,7 +85,7 @@ namespace APIMuseos
             var Todos = await FetchTo<Todo>(Client, $"{Root}todos");
             var Users = await FetchTo<User>(Client, $"{Root}users");
 
-            // 1: Ver cuáles son los comentarios que hay para un post determinado
+            #region 1: Ver cuáles son los comentarios que hay para un post determinado
             var PostID = 1;
 
             var CommentsForSinglePost = from c in Comments
@@ -98,8 +98,9 @@ namespace APIMuseos
                 Console.WriteLine($"- {Comment.name} ({Comment.email}) -> {Comment.body}");
             }
             Console.WriteLine("");
+            #endregion
 
-            // 2: Ver cuáles son los álbums que hay y la cantidad de fotos que contiene cada uno de ellos
+            #region 2: Ver cuáles son los álbums que hay y la cantidad de fotos que contiene cada uno de ellos
             var PhotosInAlbums = from p in Photos
                                  join a in Albums on p.albumId equals a.id
                                  group p by a.title into photos
@@ -112,8 +113,9 @@ namespace APIMuseos
                 Console.WriteLine($"- {Album.Title}: {Album.Total}");
             }
             Console.WriteLine("");
+            #endregion
 
-            // 3: Ver cuáles son los nombres de los usuarios ordenados descendentemente
+            #region 3: Ver cuáles son los nombres de los usuarios ordenados descendentemente
             var UserNames = from u in Users
                             orderby u.name descending
                             select u.name;
@@ -124,8 +126,9 @@ namespace APIMuseos
                 Console.WriteLine($"- {UserName}");
             }
             Console.WriteLine("");
+            #endregion
 
-            // 4: Tomar los cinco álbums donde más fotos existan
+            #region 4: Tomar los cinco álbums donde más fotos existan
             var Top5MostPopulatedAlbums = (from a in Albums
                                            join p in Photos on a.id equals p.albumId
                                            group p by a.title into photos
@@ -139,9 +142,9 @@ namespace APIMuseos
                 Console.WriteLine($"- {Album.Title}: {Album.Total}");
             }
             Console.WriteLine("");
+            #endregion
 
-
-            // 5: Ver qué cantidad de comentarios totales ha recibido un usuario
+            #region 5: Ver qué cantidad de comentarios totales ha recibido un usuario
             var UserID = 4;
 
             var CommentsPerUser = from u in Users
@@ -158,17 +161,32 @@ namespace APIMuseos
                 Console.WriteLine($"- {User.UserName} - Comments = {User.TotalComments}");
             }
             Console.WriteLine("");
+            #endregion
 
-            // 6: Mostrar el usuario que más comentarios ha recibido
+            #region 6: Mostrar el usuario que más comentarios ha recibido
+            var MostCommentedUser = (from u in Users
+                                    join p in Posts on u.id equals p.userId
+                                    join c in Comments on p.id equals c.postId
+                                    group c by u.name into comments
+                                    orderby comments.Count() descending
+                                    select comments).First();
 
+            Console.WriteLine($"Comments per user:");
+            foreach (var User in CommentsPerUser)
+            {
+                Console.WriteLine($"- {User.UserName} - Comments = {User.TotalComments}");
+            }
+            Console.WriteLine("");
+            #endregion
 
-            // 7: Mostrar para cada usuario cuántas tareas tiene terminadas y cuáles no
+            #region 7: Mostrar para cada usuario cuántas tareas tiene terminadas y cuáles no
+            #endregion
 
+            #region 8: Mostrar cuál es el usuario que más tareas tiene por finalizar
+            #endregion
 
-            // 8: Mostrar cuál es el usuario que más tareas tiene por finalizar
-
-
-            // 9: Mostrar todas las urls de las imágenes del usuario que más fotos ha subido
+            #region 9: Mostrar todas las urls de las imágenes del usuario que más fotos ha subido
+            #endregion
         }
 
         static async Task<List<T>> FetchTo<T>(HttpClient Client, string Resource) where T : class
