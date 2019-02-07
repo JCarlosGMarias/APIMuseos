@@ -2,13 +2,13 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace APIMuseos
 {
-    // https://museowebapp.azurewebsites.net/api/MuseosAPI
     // https://www.newtonsoft.com/json/help/html/QueryingLINQtoJSON.htm
 
     class Program
@@ -28,7 +28,7 @@ namespace APIMuseos
             {
                 List<Museo> ListaMuseos = new List<Museo>();
 
-                using (var response = await Client.GetAsync(new Uri(@"https://museowebapp.azurewebsites.net/api/MuseosAPI")))
+                using (var response = await Client.GetAsync(new Uri(ConfigurationManager.AppSettings["MuseosAPI"])))
                 {
                     if (response.IsSuccessStatusCode)
                     {
@@ -50,7 +50,7 @@ namespace APIMuseos
             {
                 var ListaMuseos = new List<Museo>();
 
-                using (var response = await Client.GetAsync(new Uri("https://museowebapp.azurewebsites.net/api/MuseosAPI")))
+                using (var response = await Client.GetAsync(new Uri(ConfigurationManager.AppSettings["MuseosAPI"])))
                 {
                     if (response.IsSuccessStatusCode)
                     {
@@ -67,8 +67,7 @@ namespace APIMuseos
         static async void PhotosEx()
         {
             // Usando jsonplaceholder.typicode.com
-
-            var Root = new Uri(@"https://jsonplaceholder.typicode.com");
+            var Root = new Uri(ConfigurationManager.AppSettings["JsonPlaceholder"]);
             Console.WriteLine($"API URL -> {Root}. Fetching resources...");
 
             #region Crear las colecciones con los datos.
