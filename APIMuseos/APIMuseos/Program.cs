@@ -8,19 +8,8 @@ using System.Threading.Tasks;
 
 namespace APIMuseos
 {
-
-    //    https://museowebapp.azurewebsites.net/api/MuseosAPI
-
-    //https://www.newtonsoft.com/json/help/html/QueryingLINQtoJSON.htm
-    class Museo /*Contenido de la API https://museowebapp.azurewebsites.net/api/MuseosAPI */
-    {
-        public int Id { get; set; }
-        public string Coordenadas { get; set; }
-        public string Datacion { get; set; }
-        public string Descripcion { get; set; }
-        public string Titulo { get; set; }
-        public string Imagen { get; set; }
-    }
+    // https://museowebapp.azurewebsites.net/api/MuseosAPI
+    // https://www.newtonsoft.com/json/help/html/QueryingLINQtoJSON.htm
 
     class Program
     {
@@ -75,7 +64,9 @@ namespace APIMuseos
         static async void PhotosEx(HttpClient Client)
         {
             // Usando jsonplaceholder.typicode.com
+            
             var Root = new Uri(@"https://jsonplaceholder.typicode.com");
+            Console.WriteLine($"API URL -> {Root}. Fetching resources...");
 
             // Crear las colecciones con los datos.
             var Posts = await FetchTo<Post>(Client, $"{Root}posts");
@@ -84,6 +75,8 @@ namespace APIMuseos
             var Photos = await FetchTo<Photo>(Client, $"{Root}photos");
             var Todos = await FetchTo<Todo>(Client, $"{Root}todos");
             var Users = await FetchTo<User>(Client, $"{Root}users");
+
+            Console.WriteLine($"Starting LINQ queries...{Environment.NewLine}");
 
             #region 1: Ver cuáles son los comentarios que hay para un post determinado
             var PostID = 1;
@@ -136,7 +129,7 @@ namespace APIMuseos
                                            select new { Title = photos.Key, Total = photos.Count() })
                                           .Take(5);
 
-            Console.WriteLine($"Photos in each album:");
+            Console.WriteLine($"Top 5 Most Populated albums:");
             foreach (var Album in Top5MostPopulatedAlbums)
             {
                 Console.WriteLine($"- {Album.Title}: {Album.Total}");
@@ -145,7 +138,7 @@ namespace APIMuseos
             #endregion
 
             #region 5: Ver qué cantidad de comentarios totales ha recibido un usuario
-            var UserID = 4;
+            var UserID = 3;
 
             var CommentsPerUser = from u in Users
                                   join p in Posts on u.id equals p.userId
@@ -169,14 +162,10 @@ namespace APIMuseos
                                     join c in Comments on p.id equals c.postId
                                     group c by u.name into comments
                                     orderby comments.Count() descending
-                                    select comments).First();
+                                    select new { UserName = comments.Key, Total = comments.Count() }).First();
 
-            Console.WriteLine($"Comments per user:");
-            foreach (var User in CommentsPerUser)
-            {
-                Console.WriteLine($"- {User.UserName} - Comments = {User.TotalComments}");
-            }
-            Console.WriteLine("");
+            Console.WriteLine($"Most commented user:");
+            Console.WriteLine($"- {MostCommentedUser.UserName} - Comments = {MostCommentedUser.Total}{Environment.NewLine}{Environment.NewLine}");
             #endregion
 
             #region 7: Mostrar para cada usuario cuántas tareas tiene terminadas y cuáles no

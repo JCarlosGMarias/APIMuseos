@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Models\Album.cs" />
     <Compile Include="Models\Comment.cs" />
+    <Compile Include="Models\Museo.cs" />
     <Compile Include="Models\Photo.cs" />
     <Compile Include="Models\Post.cs" />
     <Compile Include="Models\Todo.cs" />
