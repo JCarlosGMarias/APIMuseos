@@ -206,6 +206,7 @@ namespace APIMuseos
             #region 8: Mostrar cuál es el usuario que más tareas tiene por finalizar
             var MostDelayedUser = (from u in Users
                                    join t in Todos on u.id equals t.userId
+                                   where !t.completed
                                    group t by u.name into users
                                    orderby users.Count() descending
                                    select new { UserName = users.Key, Total = users.Count() }).First();
