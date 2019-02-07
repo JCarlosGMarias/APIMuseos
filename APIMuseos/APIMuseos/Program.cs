@@ -172,6 +172,14 @@ namespace APIMuseos
             #endregion
 
             #region 8: Mostrar cuál es el usuario que más tareas tiene por finalizar
+            var MostDelayedUser = (from u in Users
+                                   join t in Todos on u.id equals t.userId
+                                   group t by u.name into users
+                                   orderby users.Count() descending
+                                   select new { UserName = users.Key, Total = users.Count() }).First();
+
+            Console.WriteLine($"Most delayed user:");
+            Console.WriteLine($"- {MostDelayedUser.UserName} - Todos = {MostDelayedUser.Total}{Environment.NewLine}{Environment.NewLine}");
             #endregion
 
             #region 9: Mostrar todas las urls de las imágenes del usuario que más fotos ha subido
