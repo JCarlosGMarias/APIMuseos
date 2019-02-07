@@ -20,9 +20,9 @@ namespace APIMuseos
                 //leeMuseos(Client);
 
                 PhotosEx(Client);
-
-                Console.ReadLine();
             }
+
+            Console.ReadLine();
         }
 
         static async void leeMuseos(HttpClient Client)
@@ -183,6 +183,19 @@ namespace APIMuseos
             #endregion
 
             #region 9: Mostrar todas las urls de las imágenes del usuario que más fotos ha subido
+            var ImagesFromMostCollaborativeUser = (from u in Users
+                                                   join a in Albums on u.id equals a.userId
+                                                   join p in Photos on a.id equals p.albumId
+                                                   group p by u.name into photos
+                                                   orderby photos.Count() descending
+                                                   select new { UserName = photos.Key, Total = photos.Count(), Photos = photos.ToList() }).First();
+
+            Console.WriteLine($"Photos from most collaborative user:");
+            Console.WriteLine($"- User: {ImagesFromMostCollaborativeUser.UserName} (Total photos: {ImagesFromMostCollaborativeUser.Total})");
+            foreach (var Photo in ImagesFromMostCollaborativeUser.Photos)
+            {
+                Console.WriteLine($"  * Url: {Photo.url}");
+            }
             #endregion
         }
 
