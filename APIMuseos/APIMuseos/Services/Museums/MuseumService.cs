@@ -21,8 +21,15 @@ namespace APIMuseos.Services.Museums
         #region Constructor
         public MuseumService(DataContext Context = null)
         {
-            this.Context = Context ?? new DataContext();
-            this.Context.SetStrategy(new POCOStrategy(this));
+            if (Context == null)
+            {
+                this.Context = new DataContext();
+                this.Context.SetStrategy(new POCOStrategy(this));
+            }
+            else
+            {
+                this.Context = Context;
+            }
         }
         #endregion
 
