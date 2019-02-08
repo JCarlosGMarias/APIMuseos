@@ -1,11 +1,13 @@
 ﻿using APIMuseos.Models;
-using Newtonsoft.Json;
+using APIMuseos.Services.Museums;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace APIMuseos
 {
@@ -15,61 +17,91 @@ namespace APIMuseos
     {
         static void Main(string[] args)
         {
-            //leeMuseos();
-            //leeMuseosVisitas();
-            PhotosEx();
+            if (args.Count() == 1)
+            {
+                bool.TryParse(args[0], out bool IsRaw);
+
+                
+                MuseumsExStrategy(IsRaw);
+                //MuseumsEx();
+            }
+            else
+            {
+                PhotosEx();
+            }
 
             Console.ReadKey();
         }
 
-        static async void leeMuseos()
+        static async void MuseumsEx()
         {
+            #region Crear colección de museos
+            JArray MuseumArray = new JArray();
+            var Museums = new List<Museo>();
+
             using (var Client = new HttpClient())
             {
-                List<Museo> ListaMuseos = new List<Museo>();
-
                 using (var response = await Client.GetAsync(new Uri(ConfigurationManager.AppSettings["MuseosAPI"])))
                 {
                     if (response.IsSuccessStatusCode)
                     {
                         var content = await response.Content.ReadAsStringAsync();
-                        ListaMuseos = JsonConvert.DeserializeObject<List<Museo>>(content);
 
-                        foreach (var mus in ListaMuseos)
-                        {
-                            Console.WriteLine(mus.Descripcion);
-                        }
+                        #region Método 1: Mapeo a POCOs
+                        Museums = JsonConvert.DeserializeObject<List<Museo>>(content);
+                        #endregion
+
+                        #region Método 2: Parseo directo
+                        MuseumArray = JArray.Parse(content);
+                        #endregion
                     }
                 }
             }
+            #endregion
+
+            #region 1: Visualizar todos los museos
+            Console.WriteLine("All museums (POCO):");
+            foreach (var Museum in from m in Museums select m)
+            {
+                Console.WriteLine($"- {Museum.Titulo}: {Museum.Descripcion}");
+            }
+
+            Console.WriteLine("All museums (Raw):");
+            foreach (var Museum in from m in MuseumArray select m)
+            {
+                Console.WriteLine($"- {Museum["titulo"]}: {Museum["descripcion"]}");
+            }
+            #endregion
+
+            #region 2: Visualizar todos los museos visitados
+            Console.WriteLine($"Visited museums (POCO):");
+            foreach (var VisitedMuseum in from m in Museums where "S".Equals(m.Visita) select m)
+            {
+                Console.WriteLine($"- {VisitedMuseum.Titulo}");
+            }
+
+            Console.WriteLine($"Visited museums (Raw):");
+            foreach (var VisitedMuseum in from m in MuseumArray where "S".Equals((string)m["visita"]) select m)
+            {
+                Console.WriteLine($"- {VisitedMuseum["titulo"]}");
+            }
+            #endregion
         }
 
-        static async void leeMuseosVisitas()
+        static void MuseumsExStrategy(bool IsRaw)
         {
-            using (var Client = new HttpClient())
-            {
-                var ListaMuseos = new List<Museo>();
+            var Service = new MuseumService();
 
-                using (var response = await Client.GetAsync(new Uri(ConfigurationManager.AppSettings["MuseosAPI"])))
-                {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var content = await response.Content.ReadAsStringAsync();
-                        //JArray Array = JArray.Parse(content);
-                        //var visitasS = from o in Array
-                        //               where p => p["visitas"] == "S"
-                        //               select o;
-                    }
-                }
+            if (!IsRaw)
+            {
+                Service.SetRawStrategy();
             }
+
+            Service.Execute();
         }
 
         static async void PhotosEx()
         {
-            // Usando jsonplaceholder.typicode.com
-            var Root = new Uri(ConfigurationManager.AppSettings["JsonPlaceholder"]);
-            Console.WriteLine($"API URL -> {Root}. Fetching resources...");
-
             #region Crear las colecciones con los datos.
             List<Post> Posts;
             List<Comment> Comments;
@@ -80,6 +112,10 @@ namespace APIMuseos
 
             using (var Client = new HttpClient())
             {
+                // Usando jsonplaceholder.typicode.com
+                var Root = new Uri(ConfigurationManager.AppSettings["JsonPlaceholder"]);
+                Console.WriteLine($"API URL -> {Root}. Fetching resources...");
+
                 Posts = await FetchTo<Post>(Client, $"{Root}posts");
                 Comments = await FetchTo<Comment>(Client, $"{Root}comments");
                 Albums = await FetchTo<Album>(Client, $"{Root}albums");
