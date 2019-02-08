@@ -5,7 +5,14 @@ Conjunto de ejercicios LINQ sobre APIs REST
 - API de museos: https://museowebapp.azurewebsites.net/api/MuseosAPI
 - API de pruebas para ejercicios LINQ: https://jsonplaceholder.typicode.com
 
-## Ejercicios
+## Ejercicios Museo
+
+Usando https://museowebapp.azurewebsites.net/api/MuseosAPI:
+
+- 1: Ver todos los museos
+- 2: Ver todos los museos con visitas
+
+## Ejercicios JsonPlaceholder
 
 Usando https://jsonplaceholder.typicode.com:
 
