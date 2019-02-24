@@ -55,13 +55,22 @@ namespace APIMuseos.Services.Albums
         public void CommentsForSinglePost(int PostID)
         {
             var Result = from c in Comments
-                         where c.postId == (from p in Posts where p.id == PostID select p.id).FirstOrDefault()
+                         where c.PostId == (from p in Posts where p.Id == PostID select p.Id).FirstOrDefault()
                          select c;
+
+            var Result2 = from p in Posts
+                          join c in Comments on p.Id equals c.PostId
+                          where c.PostId == PostID
+                          select c;
+
+            var Result3 = from c in Comments
+                          where c.PostId == PostID
+                          select c;
 
             Console.WriteLine($"Comments for post {PostID}:{Environment.NewLine}");
             foreach (Comment Comment in Result)
             {
-                Console.WriteLine($"- {Comment.name} ({Comment.email}) -> {Comment.body}");
+                Console.WriteLine($"- {Comment.Name} ({Comment.Email}) -> {Comment.Body}");
             }
             Console.WriteLine("");
         }
@@ -72,8 +81,8 @@ namespace APIMuseos.Services.Albums
         public void PhotosInAlbums()
         {
             var Result = from p in Photos
-                         join a in Albums on p.albumId equals a.id
-                         group p by a.title into photos
+                         join a in Albums on p.AlbumId equals a.Id
+                         group p by a.Title into photos
                          orderby photos.Key
                          select new { Title = photos.Key, Total = photos.Count() };
 
@@ -91,8 +100,8 @@ namespace APIMuseos.Services.Albums
         public void SortedDownUserNames()
         {
             var UserNames = from u in Users
-                            orderby u.name descending
-                            select u.name;
+                            orderby u.Name descending
+                            select u.Name;
 
             Console.WriteLine($"Sorted down user names:");
             foreach (string UserName in UserNames)
@@ -108,8 +117,8 @@ namespace APIMuseos.Services.Albums
         public void Top5MostPopulatedAlbums()
         {
             var Result = (from a in Albums
-                          join p in Photos on a.id equals p.albumId
-                          group p by a.title into photos
+                          join p in Photos on a.Id equals p.AlbumId
+                          group p by a.Title into photos
                           orderby photos.Count(), photos.Key
                           select new { Title = photos.Key, Total = photos.Count() }).Take(5);
 
@@ -128,10 +137,10 @@ namespace APIMuseos.Services.Albums
         public void CommentsPerUser(int UserID)
         {
             var Result = from u in Users
-                         join p in Posts on u.id equals p.userId
-                         join c in Comments on p.id equals c.postId
-                         where u.id == UserID
-                         group c by u.name into comments
+                         join p in Posts on u.Id equals p.UserId
+                         join c in Comments on p.Id equals c.PostId
+                         where u.Id == UserID
+                         group c by u.Name into comments
                          orderby comments.Count(), comments.Key
                          select new { UserName = comments.Key, TotalComments = comments.Count() };
 
@@ -149,9 +158,9 @@ namespace APIMuseos.Services.Albums
         public void MostCommentedUser()
         {
             var Result = (from u in Users
-                          join p in Posts on u.id equals p.userId
-                          join c in Comments on p.id equals c.postId
-                          group c by u.name into comments
+                          join p in Posts on u.Id equals p.UserId
+                          join c in Comments on p.Id equals c.PostId
+                          group c by u.Name into comments
                           orderby comments.Count() descending
                           select new { UserName = comments.Key, Total = comments.Count() }).First();
 
@@ -167,9 +176,9 @@ namespace APIMuseos.Services.Albums
             var Result = from u in Users
                          select new
                          {
-                             UserName = u.name,
-                             FinishedTasksCount = (from t in Todos where t.userId == u.id && t.completed select t).Count(),
-                             UnfinishedTasks = from t in Todos where t.userId == u.id && !t.completed select t
+                             UserName = u.Name,
+                             FinishedTasksCount = (from t in Todos where t.UserId == u.Id && t.Completed select t).Count(),
+                             UnfinishedTasks = from t in Todos where t.UserId == u.Id && !t.Completed select t
                          };
 
             Console.WriteLine($"Todos status per user:");
@@ -178,7 +187,7 @@ namespace APIMuseos.Services.Albums
                 Console.WriteLine($"- User: {User.UserName} (Finished todos: {User.FinishedTasksCount}) (Remaining todos: {User.UnfinishedTasks.Count()})");
                 foreach (Todo Todo in User.UnfinishedTasks)
                 {
-                    Console.WriteLine($"  * Todo: {Todo.title}");
+                    Console.WriteLine($"  * Todo: {Todo.Title}");
                 }
             }
             Console.WriteLine($"{Environment.NewLine}{Environment.NewLine}");
@@ -190,9 +199,9 @@ namespace APIMuseos.Services.Albums
         public void MostDelayedUser()
         {
             var Result = (from u in Users
-                          join t in Todos on u.id equals t.userId
-                          where !t.completed
-                          group t by u.name into users
+                          join t in Todos on u.Id equals t.UserId
+                          where !t.Completed
+                          group t by u.Name into users
                           orderby users.Count() descending
                           select new { UserName = users.Key, Total = users.Count() }).First();
 
@@ -206,9 +215,9 @@ namespace APIMuseos.Services.Albums
         public void ImagesFromMostCollaborativeUser()
         {
             var Result = (from u in Users
-                          join a in Albums on u.id equals a.userId
-                          join p in Photos on a.id equals p.albumId
-                          group p by u.name into photos
+                          join a in Albums on u.Id equals a.UserId
+                          join p in Photos on a.Id equals p.AlbumId
+                          group p by u.Name into photos
                           orderby photos.Count() descending
                           select new { UserName = photos.Key, Total = photos.Count(), Photos = photos.ToList() }).First();
 
@@ -216,7 +225,7 @@ namespace APIMuseos.Services.Albums
             Console.WriteLine($"- User: {Result.UserName} (Total photos: {Result.Total})");
             foreach (Photo Photo in Result.Photos)
             {
-                Console.WriteLine($"  * Url: {Photo.url}");
+                Console.WriteLine($"  * Url: {Photo.Url}");
             }
         }
         #endregion

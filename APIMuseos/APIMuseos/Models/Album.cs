@@ -3,8 +3,8 @@ namespace APIMuseos.Models
 {
     public class Album
     {
-        public int userId { get; set; }
-        public int id { get; set; }
-        public string title { get; set; }
+        public int UserId { get; set; }
+        public int Id { get; set; }
+        public string Title { get; set; }
     }
 }
